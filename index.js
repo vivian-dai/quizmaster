@@ -56,11 +56,11 @@ async function updateUsers(cl, user){
   let userData = (await gsapi.spreadsheets.values.get(readUsers)).data.values;
   let foundUser = false;
   for (let i = 0;i < userData.length;i++){
-    if (userData[0] === user) {
-      userData[1] += 10;
-      userData[2] += 10;
-      userData[3] += 10;
-      userData[4] += 10;
+    if (userData[i][0] === user) {
+      userData[i][1] = parseInt(userData[i][1]) + 10;
+      userData[i][2] = parseInt(userData[i][2]) + 10;
+      userData[i][3] = parseInt(userData[i][3]) + 10;
+      userData[i][4] = parseInt(userData[i][4]) + 10;
       foundUser = true;
     }
   }
@@ -90,7 +90,16 @@ client.on('message', async (msg) => {
   }
   if (msg.content.startsWith(prefix.concat("trivia"))) {
     curQuestionIndex = Math.floor(Math.random() * questions.length);
-    msg.channel.send(questions[curQuestionIndex][0]);
+    const embed = new Discord.MessageEmbed()
+      .setColor("#5f0f22")
+      .setTitle("QUESTION TIME")
+      .setDescription(questions[curQuestionIndex][0])
+      .addFields(
+        {name:"Category: ", value:questions[curQuestionIndex][3], inline:false},
+        {name:"Difficuty: ", value:questions[curQuestionIndex][2], inline:false}
+      )
+      
+    msg.channel.send(embed);
   }
   if (msg.content.toLowerCase().includes(questions[curQuestionIndex][1].toLowerCase())){
     msg.reply("congrats!");
