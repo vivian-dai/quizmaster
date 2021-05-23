@@ -93,6 +93,7 @@ client.on('message', async (msg) => {
     const embed = new Discord.MessageEmbed()
       .setColor("#5f0f22")
       .setTitle("QUESTION TIME")
+      .setAuthor("follow " + process.env.ACCOUNT + " ;)", process.env.PFP_LINK, process.env.LINK)
       .setDescription(questions[curQuestionIndex][0])
       .addFields(
         {name:"Category: ", value:questions[curQuestionIndex][3], inline:false},
