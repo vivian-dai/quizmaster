@@ -22,9 +22,7 @@ let curQuestionIndex = -1;
 const {google} = require('googleapis');
 const google_sheets = new google.auth.JWT(
   process.env.EMAIL, null, process.env.PRIVATE_KEY,
-  //TODO: make the credentials work within environment variables
-  // creds.client_email, null, creds.private_key,
-  ['https://www.googleapis.com/auth/spreadsheets.readonly']
+  ['https://www.googleapis.com/auth/spreadsheets']
 );
 
 google_sheets.authorize( (err, tokens) =>{
@@ -39,12 +37,43 @@ google_sheets.authorize( (err, tokens) =>{
 
 async function gsrun(cl){
   const gsapi = google.sheets({version: "v4", auth: cl});
-  const spread_sheet_questions = {
-    spreadsheetId: process.env.SHEET_ID,
+  const id = process.env.SHEET_ID;
+  const spreadSheetQuestions = {
+    spreadsheetId: id,
     range: "Questions!A2:D2000"
   };
-  let questions_sheet = await gsapi.spreadsheets.values.get(spread_sheet_questions);
-  questions = questions_sheet.data.values;
+  let questionSheet = await gsapi.spreadsheets.values.get(spreadSheetQuestions);
+  questions = questionSheet.data.values;
+}
+
+async function updateUsers(cl, user){
+  const gsapi = google.sheets({version: "v4", auth: cl});
+  const id = process.env.SHEET_ID;
+  const readUsers = {
+    spreadsheetId: id,
+    range: "Users!A2:E2000"
+  };
+  let userData = (await gsapi.spreadsheets.values.get(readUsers)).data.values;
+  let foundUser = false;
+  for (let i = 0;i < userData.length;i++){
+    if (userData[0] === user) {
+      userData[1] += 10;
+      userData[2] += 10;
+      userData[3] += 10;
+      userData[4] += 10;
+      foundUser = true;
+    }
+  }
+  if (!foundUser) {
+    userData.push([user, 10, 10, 10, 10]);
+  }
+  const spreadSheetUsers = {
+    spreadsheetId: id,
+    range: "Users!A2",
+    valueInputOption: "USER_ENTERED",
+    resource: {values: userData}
+  };
+  gsapi.spreadsheets.values.update(spreadSheetUsers);
 }
 
 const Discord = require('discord.js');
@@ -63,8 +92,9 @@ client.on('message', async (msg) => {
     curQuestionIndex = Math.floor(Math.random() * questions.length);
     msg.channel.send(questions[curQuestionIndex][0]);
   }
-  if (msg.content.toLowerCase().includes(questions[curQuestionIndex][1])){
-    msg.reply(" congrats!");
+  if (msg.content.toLowerCase().includes(questions[curQuestionIndex][1].toLowerCase())){
+    msg.reply("congrats!");
+    await updateUsers(google_sheets, msg.author.id);
   }
 });
 
