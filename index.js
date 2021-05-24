@@ -17,11 +17,14 @@ app.listen(port, function() {
 });
 
 class TriviaGame {
-  constructor (questions, questionCount, time) {
+  constructor (questions, questionCount, time, channel) {
     this.questions = questions;
     this.questionCount = questionCount;
     this.time = time;
+    this.channel = channel;
     this.curQuestionIndex = Math.floor(Math.random() * this.questions.length);
+    this.questionTime = Date.now();
+    this.checkTime();
   }
   getQuestion() {
     return this.questions[this.curQuestionIndex][0];
@@ -36,6 +39,8 @@ class TriviaGame {
     if(submission.toLowerCase().includes(this.questions[this.curQuestionIndex][1].toLowerCase())) {
       this.questionCount--;
       this.curQuestionIndex = Math.floor(Math.random() * this.questions.length);
+      this.questionTime = Date.now();
+      this.checkTime();
       return true;
     } else {
       return false;
@@ -48,11 +53,48 @@ class TriviaGame {
       return false;
     }
   }
+  checkTime() {
+    if ((Date.now() - this.questionTime) >= this.time*1000) {
+      const answerEmbed = new Discord.MessageEmbed()
+        .setColor("#5f0f22")
+        .setDescription(`Answer: ${this.questions[this.curQuestionIndex][1]}`)
+      this.channel.send(answerEmbed);
+      this.questionCount--;
+      this.curQuestionIndex = Math.floor(Math.random() * this.questions.length);
+      this.questionTime = Date.now();
+      if (this.isRoundOver()) {
+        games[this.channel.id] = undefined;
+      } else {
+        const questionEmbed = new Discord.MessageEmbed()
+        .setColor("#5f0f22")
+        .setTitle("QUESTION TIME")
+        .setAuthor(`follow ${process.env.ACCOUNT} ;)`, process.env.PFP_LINK, process.env.LINK)
+        .setDescription(this.getQuestion())
+        .addFields(
+          {name:"Category: ", value:this.getTopic(), inline:true},
+          {name:"Difficuty: ", value:this.getDifficulty(), inline:true}
+        )
+      
+      this.channel.send(questionEmbed);
+      }
+    }
+  }
 }
 
 var questions;
-let curQuestionIndex = -1;
 var games = new Object();
+
+function dumbThingToExecuteEverySecond() {
+  // console.log(games);
+  for (const id in games) {
+    if (games[id] !== undefined) {
+      games[id].checkTime();
+    }
+  }
+  setTimeout(dumbThingToExecuteEverySecond, 1000);
+}
+
+dumbThingToExecuteEverySecond();
 
 const {google} = require('googleapis');
 const google_sheets = new google.auth.JWT(
@@ -142,11 +184,15 @@ async function getRankAndScore(cl, user) {
 }
 
 const Discord = require('discord.js');
-const e = require('express');
 const client = new Discord.Client();
 const prefix = "!";
 
 client.on('ready', () => {
+  client.user.setPresence({
+    activity: {
+      name: "trivia"
+    }
+  });
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
@@ -184,11 +230,11 @@ client.on('message', async (msg) => {
     }else{
       let params = msg.content.split(" ");
       if (params.length === 1) {
-        games[msg.channel.id] = new TriviaGame(questions, 10, 10);
+        games[msg.channel.id] = new TriviaGame(questions, 10, 10, msg.channel);
       } else if (params.length === 2) {
-        games[msg.channel.id] = new TriviaGame(questions, parseInt(params[1]), 10);
+        games[msg.channel.id] = new TriviaGame(questions, parseInt(params[1]), 10, msg.channel);
       } else if (params.length === 3) {
-        games[msg.channel.id] = new TriviaGame(questions, parseInt(params[1]), parseInt(params[2]));
+        games[msg.channel.id] = new TriviaGame(questions, parseInt(params[1]), parseInt(params[2]), msg.channel);
       } else {
         const embed = new Discord.MessageEmbed()
           .setColor("#ff0000")
