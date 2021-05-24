@@ -201,9 +201,11 @@ function dumbThingToExecuteEverySecond() {
     day = date.getDate();
     updateUserScores(google_sheets, 4);
   }
-  if ((date.getDay() != week) && (date.getDay() == 0)) {
+  if (date.getDay() != week) {
     week = date.getDay();
-    updateUserScores(google_sheets, 3);
+    if ((date.getDay() == 0)) {
+      updateUserScores(google_sheets, 3);
+    }
   }
   if (date.getMonth() != month) {
     month = date.getMonth();
@@ -233,6 +235,19 @@ client.on('ready', () => {
 });
 
 client.on('message', async (msg) => {
+  if (msg.content === prefix.concat("help")) {
+    const embed = new Discord.MessageEmbed()
+      .setColor("#5f0f22")
+      .setTitle("Help Request!!!")
+      .setDescription("<flag=10> means flag defaults to 10 if not otherwise specified")
+      .addFields(
+        {name:`${prefix}help`, value: "shows this message and is otherwise a useless command :innocent:", inline:false},
+        {name:`${prefix}trivia <questions=10> <seconds=10>`, value: "starts a trivia round with some questions and some time between questions", inline:false},
+        {name:`${prefix}stop`, value: "stops the current trivia round", inline:false},
+        {name:`${prefix}rank`, value: "shows your rank as well as your scores", inline:false}
+      )
+    msg.channel.send(embed);
+  }
   if (msg.content === prefix.concat("stop")) {
     games[msg.channel.id] = undefined;
     const embed = new Discord.MessageEmbed()
