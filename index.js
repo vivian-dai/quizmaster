@@ -16,8 +16,44 @@ app.listen(port, function() {
   console.log(`listening at port ${port}`);
 });
 
+class TriviaGame {
+  constructor (questions, questionCount, time, rounds) {
+    this.questions = questions;
+    this.questionCount = questionCount;
+    this.time = time;
+    this.rounds = rounds;
+    this.curQuestionIndex = Math.floor(Math.random() * this.questions.length);
+  }
+  getQuestion() {
+    return this.questions[this.curQuestionIndex][0];
+  }
+  getDifficulty() {
+    return this.questions[this.curQuestionIndex][2];
+  }
+  getTopic() {
+    return this.questions[this.curQuestionIndex][3];
+  }
+  checkAnswer(submission) {
+    if(submission.toLowerCase().includes(this.questions[this.curQuestionIndex][1].toLowerCase())) {
+      this.questionCount--;
+      this.curQuestionIndex = Math.floor(Math.random() * this.questions.length);
+      return true;
+    } else {
+      return false;
+    }
+  }
+  isRoundOver() {
+    if (this.questionCount <= 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+}
+
 var questions;
 let curQuestionIndex = -1;
+var games = new Object();
 
 const {google} = require('googleapis');
 const google_sheets = new google.auth.JWT(
@@ -77,6 +113,7 @@ async function updateUsers(cl, user){
 }
 
 const Discord = require('discord.js');
+const e = require('express');
 const client = new Discord.Client();
 const prefix = "!";
 
@@ -89,22 +126,45 @@ client.on('message', async (msg) => {
     msg.reply('Pong!');
   }
   if (msg.content.startsWith(prefix.concat("trivia"))) {
-    curQuestionIndex = Math.floor(Math.random() * questions.length);
-    const embed = new Discord.MessageEmbed()
+    if(games[msg.channel.id] !== undefined) {
+      const embed = new Discord.MessageEmbed()
+        .setColor("#ff0000")
+        .setTitle("WHOA WHOA WHOA BUDDY")
+        .setDescription("you already have a game in session")
+      msg.channel.send(embed);
+    }else{
+      games[msg.channel.id] = new TriviaGame(questions, 10, 10, 10);
+      const embed = new Discord.MessageEmbed()
       .setColor("#5f0f22")
       .setTitle("QUESTION TIME")
       .setAuthor("follow " + process.env.ACCOUNT + " ;)", process.env.PFP_LINK, process.env.LINK)
-      .setDescription(questions[curQuestionIndex][0])
+      .setDescription(games[msg.channel.id].getQuestion())
       .addFields(
-        {name:"Category: ", value:questions[curQuestionIndex][3], inline:false},
-        {name:"Difficuty: ", value:questions[curQuestionIndex][2], inline:false}
+        {name:"Category: ", value:games[msg.channel.id].getTopic(), inline:false},
+        {name:"Difficuty: ", value:games[msg.channel.id].getDifficulty(), inline:false}
       )
       
     msg.channel.send(embed);
+    }
   }
-  if (msg.content.toLowerCase().includes(questions[curQuestionIndex][1].toLowerCase())){
+  if ((games[msg.channel.id] !== undefined) && (games[msg.channel.id].checkAnswer(msg.content))) {
     msg.reply("congrats!");
     await updateUsers(google_sheets, msg.author.id);
+    if (games[msg.channel.id].isRoundOver()) {
+      games[msg.channel.id] = undefined;
+    } else {
+      const embed = new Discord.MessageEmbed()
+      .setColor("#5f0f22")
+      .setTitle("QUESTION TIME")
+      .setAuthor("follow " + process.env.ACCOUNT + " ;)", process.env.PFP_LINK, process.env.LINK)
+      .setDescription(games[msg.channel.id].getQuestion())
+      .addFields(
+        {name:"Category: ", value:games[msg.channel.id].getTopic(), inline:false},
+        {name:"Difficuty: ", value:games[msg.channel.id].getDifficulty(), inline:false}
+      )
+      
+      msg.channel.send(embed);
+    }
   }
 });
 
