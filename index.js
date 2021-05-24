@@ -111,6 +111,36 @@ async function updateUsers(cl, user){
   gsapi.spreadsheets.values.update(spreadSheetUsers);
 }
 
+async function getRankAndScore(cl, user) {
+  let rankAndScore = [1, 0, 0, 0, 0];
+  const gsapi = google.sheets({version: "v4", auth: cl});
+  const id = process.env.SHEET_ID;
+  const readUsers = {
+    spreadsheetId: id,
+    range: "Users!A2:E2000"
+  };
+  let userData = (await gsapi.spreadsheets.values.get(readUsers)).data.values;
+  let foundUser = false;
+  for (let i = 0;i < userData.length;i++){
+    if (userData[i][0] === user) {
+      rankAndScore[1] = parseInt(userData[i][1]);
+      rankAndScore[2] = parseInt(userData[i][2]);
+      rankAndScore[3] = parseInt(userData[i][3]);
+      rankAndScore[4] = parseInt(userData[i][4]);
+      foundUser = true;
+    }
+  }
+  if (!foundUser) {
+    return null;
+  }
+  for (let i = 0;i < userData.length;i++){
+    if (userData[i][1] > rankAndScore[1]) {
+      rankAndScore[0]++;
+    }
+  }
+  return rankAndScore;
+}
+
 const Discord = require('discord.js');
 const e = require('express');
 const client = new Discord.Client();
@@ -128,6 +158,22 @@ client.on('message', async (msg) => {
       .setDescription("game stoped")
     msg.channel.send(embed);
   }
+
+  if (msg.content === prefix.concat("rank")) {
+    const rankAndScore = await getRankAndScore(google_sheets, msg.author.id);
+    const embed = new Discord.MessageEmbed()
+      .setAuthor(msg.author.username, msg.author.displayAvatarURL())
+      .setColor("#5f0f22")
+      .setTitle("Rank: " + rankAndScore[0])
+      .addFields(
+        {name:"All time score:", value:rankAndScore[1], inline:false},
+        {name:"Monthly score:", value:rankAndScore[2], inline:false},
+        {name:"Weekly score:", value:rankAndScore[3], inline:false},
+        {name:"Daily score:", value:rankAndScore[4], inline:false}
+      )
+    msg.channel.send(embed);
+  }
+
   if (msg.content.startsWith(prefix.concat("trivia"))) {
     if(games[msg.channel.id] !== undefined) {
       const embed = new Discord.MessageEmbed()
@@ -152,16 +198,16 @@ client.on('message', async (msg) => {
         return;  
       }
       const embed = new Discord.MessageEmbed()
-      .setColor("#5f0f22")
-      .setTitle("QUESTION TIME")
-      .setAuthor("follow " + process.env.ACCOUNT + " ;)", process.env.PFP_LINK, process.env.LINK)
-      .setDescription(games[msg.channel.id].getQuestion())
-      .addFields(
-        {name:"Category: ", value:games[msg.channel.id].getTopic(), inline:false},
-        {name:"Difficuty: ", value:games[msg.channel.id].getDifficulty(), inline:false}
-      )
+        .setColor("#5f0f22")
+        .setTitle("QUESTION TIME")
+        .setAuthor("follow " + process.env.ACCOUNT + " ;)", process.env.PFP_LINK, process.env.LINK)
+        .setDescription(games[msg.channel.id].getQuestion())
+        .addFields(
+          {name:"Category: ", value:games[msg.channel.id].getTopic(), inline:true},
+          {name:"Difficuty: ", value:games[msg.channel.id].getDifficulty(), inline:true}
+        )
       
-    msg.channel.send(embed);
+      msg.channel.send(embed);
     }
   }
   if ((games[msg.channel.id] !== undefined) && (games[msg.channel.id].checkAnswer(msg.content))) {
@@ -181,8 +227,8 @@ client.on('message', async (msg) => {
       .setAuthor("follow " + process.env.ACCOUNT + " ;)", process.env.PFP_LINK, process.env.LINK)
       .setDescription(games[msg.channel.id].getQuestion())
       .addFields(
-        {name:"Category: ", value:games[msg.channel.id].getTopic(), inline:false},
-        {name:"Difficuty: ", value:games[msg.channel.id].getDifficulty(), inline:false}
+        {name:"Category:", value:games[msg.channel.id].getTopic(), inline:true},
+        {name:"Difficuty:", value:games[msg.channel.id].getDifficulty(), inline:true}
       )
       
       msg.channel.send(embed);
