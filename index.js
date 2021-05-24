@@ -243,17 +243,24 @@ client.on('message', async (msg) => {
 
   if (msg.content === prefix.concat("rank")) {
     const rankAndScore = await getRankAndScore(google_sheets, msg.author.id);
-    const embed = new Discord.MessageEmbed()
-      .setAuthor(msg.author.username, msg.author.displayAvatarURL())
-      .setColor("#5f0f22")
-      .setTitle("Rank: " + rankAndScore[0])
-      .addFields(
-        {name:"All time score:", value:rankAndScore[1], inline:false},
-        {name:"Monthly score:", value:rankAndScore[2], inline:false},
-        {name:"Weekly score:", value:rankAndScore[3], inline:false},
-        {name:"Daily score:", value:rankAndScore[4], inline:false}
-      )
-    msg.channel.send(embed);
+    if (rankAndScore === null) {
+      const embed = new Discord.MessageEmbed()
+        .setColor("#ff0000")
+        .setDescription(":( you're not ranked yet")
+      msg.channel.send(embed);
+    } else {
+      const embed = new Discord.MessageEmbed()
+        .setAuthor(msg.author.username, msg.author.displayAvatarURL())
+        .setColor("#5f0f22")
+        .setTitle("Rank: " + rankAndScore[0])
+        .addFields(
+          {name:"All time score:", value:rankAndScore[1], inline:false},
+          {name:"Monthly score:", value:rankAndScore[2], inline:false},
+          {name:"Weekly score:", value:rankAndScore[3], inline:false},
+          {name:"Daily score:", value:rankAndScore[4], inline:false}
+        )
+      msg.channel.send(embed);
+    }
   }
 
   if (msg.content.startsWith(prefix.concat("trivia"))) {
