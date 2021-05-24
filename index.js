@@ -84,18 +84,6 @@ class TriviaGame {
 var questions;
 var games = new Object();
 
-function dumbThingToExecuteEverySecond() {
-  // console.log(games);
-  for (const id in games) {
-    if (games[id] !== undefined) {
-      games[id].checkTime();
-    }
-  }
-  setTimeout(dumbThingToExecuteEverySecond, 1000);
-}
-
-dumbThingToExecuteEverySecond();
-
 const {google} = require('googleapis');
 const google_sheets = new google.auth.JWT(
   process.env.EMAIL, null, process.env.PRIVATE_KEY,
@@ -182,6 +170,54 @@ async function getRankAndScore(cl, user) {
   }
   return rankAndScore;
 }
+
+async function updateUserScores(cl, row) {
+  const gsapi = google.sheets({version: "v4", auth: cl});
+  const id = process.env.SHEET_ID;
+  const readUsers = {
+    spreadsheetId: id,
+    range: "Users!A2:E2000"
+  };
+  let userData = (await gsapi.spreadsheets.values.get(readUsers)).data.values;
+  for (let i = 0;i < userData.length;i++) {
+    userDate[i][row] = 0;
+  }
+  const spreadSheetUsers = {
+    spreadsheetId: id,
+    range: "Users!A2",
+    valueInputOption: "USER_ENTERED",
+    resource: {values: userData}
+  };
+  gsapi.spreadsheets.values.update(spreadSheetUsers);
+}
+
+var day = new Date().getDate();
+var week = new Date().getDay();
+var month = new Date().getMonth();
+
+function dumbThingToExecuteEverySecond() {
+  let date = new Date();
+  if (date.getDate() != day) {
+    day = date.getDate();
+    updateUserScores(google_sheets, 4);
+  }
+  if (date.getDay() != week) {
+    week = date.getDay();
+    updateUserScores(google_sheets, 3);
+  }
+  if (date.getMonth() != month) {
+    month = date.getMonth();
+    updateUserScores(google_sheets, 2);
+  }
+  for (const id in games) {
+    if (games[id] !== undefined) {
+      games[id].checkTime();
+    }
+  }
+  setTimeout(dumbThingToExecuteEverySecond, 1000);
+}
+
+dumbThingToExecuteEverySecond();
 
 const Discord = require('discord.js');
 const client = new Discord.Client();
