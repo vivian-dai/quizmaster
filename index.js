@@ -200,7 +200,7 @@ client.on('message', async (msg) => {
       const embed = new Discord.MessageEmbed()
         .setColor("#5f0f22")
         .setTitle("QUESTION TIME")
-        .setAuthor("follow " + process.env.ACCOUNT + " ;)", process.env.PFP_LINK, process.env.LINK)
+        .setAuthor(`follow ${process.env.ACCOUNT} ;)`, process.env.PFP_LINK, process.env.LINK)
         .setDescription(games[msg.channel.id].getQuestion())
         .addFields(
           {name:"Category: ", value:games[msg.channel.id].getTopic(), inline:true},
@@ -218,13 +218,13 @@ client.on('message', async (msg) => {
       const embed = new Discord.MessageEmbed()
         .setTitle("Good game!")
         .setColor("#5f0f22")
-        .setDescription("Don't forget to follow [" + process.env.ACCOUNT + "](" + process.env.LINK + ")");
+        .setDescription(`Don't forget to follow [${process.env.ACCOUNT}](${process.env.LINK})`);
       msg.channel.send(embed);
     } else {
       const embed = new Discord.MessageEmbed()
       .setColor("#5f0f22")
       .setTitle("QUESTION TIME")
-      .setAuthor("follow " + process.env.ACCOUNT + " ;)", process.env.PFP_LINK, process.env.LINK)
+      .setAuthor(`follow ${process.env.ACCOUNT} ;)`, process.env.PFP_LINK, process.env.LINK)
       .setDescription(games[msg.channel.id].getQuestion())
       .addFields(
         {name:"Category:", value:games[msg.channel.id].getTopic(), inline:true},
