@@ -201,7 +201,7 @@ function dumbThingToExecuteEverySecond() {
     day = date.getDate();
     updateUserScores(google_sheets, 4);
   }
-  if (date.getDay() != week) {
+  if ((date.getDay() != week) && (date.getDay() == 0)) {
     week = date.getDay();
     updateUserScores(google_sheets, 3);
   }
