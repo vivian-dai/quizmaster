@@ -17,11 +17,10 @@ app.listen(port, function() {
 });
 
 class TriviaGame {
-  constructor (questions, questionCount, time, rounds) {
+  constructor (questions, questionCount, time) {
     this.questions = questions;
     this.questionCount = questionCount;
     this.time = time;
-    this.rounds = rounds;
     this.curQuestionIndex = Math.floor(Math.random() * this.questions.length);
   }
   getQuestion() {
@@ -122,8 +121,12 @@ client.on('ready', () => {
 });
 
 client.on('message', async (msg) => {
-  if (msg.content === 'ping') {
-    msg.reply('Pong!');
+  if (msg.content === prefix.concat("stop")) {
+    games[msg.channel.id] = undefined;
+    const embed = new Discord.MessageEmbed()
+      .setColor("#5f0f22")
+      .setDescription("game stoped")
+    msg.channel.send(embed);
   }
   if (msg.content.startsWith(prefix.concat("trivia"))) {
     if(games[msg.channel.id] !== undefined) {
@@ -133,7 +136,21 @@ client.on('message', async (msg) => {
         .setDescription("you already have a game in session")
       msg.channel.send(embed);
     }else{
-      games[msg.channel.id] = new TriviaGame(questions, 10, 10, 10);
+      let params = msg.content.split(" ");
+      if (params.length === 1) {
+        games[msg.channel.id] = new TriviaGame(questions, 10, 10);
+      } else if (params.length === 2) {
+        games[msg.channel.id] = new TriviaGame(questions, parseInt(params[1]), 10);
+      } else if (params.length === 3) {
+        games[msg.channel.id] = new TriviaGame(questions, parseInt(params[1]), parseInt(params[2]));
+      } else {
+        const embed = new Discord.MessageEmbed()
+          .setColor("#ff0000")
+          .setTitle("WHAT THE FLIPPY FLACK ARE YOU DOING")
+          .setDescription("uh whenever the degenerate creator of this makes a help message, use that")
+        msg.channel.send(embed);
+        return;  
+      }
       const embed = new Discord.MessageEmbed()
       .setColor("#5f0f22")
       .setTitle("QUESTION TIME")
@@ -152,6 +169,11 @@ client.on('message', async (msg) => {
     await updateUsers(google_sheets, msg.author.id);
     if (games[msg.channel.id].isRoundOver()) {
       games[msg.channel.id] = undefined;
+      const embed = new Discord.MessageEmbed()
+        .setTitle("Good game!")
+        .setColor("#5f0f22")
+        .setDescription("Don't forget to follow [" + process.env.ACCOUNT + "](" + process.env.LINK + ")");
+      msg.channel.send(embed);
     } else {
       const embed = new Discord.MessageEmbed()
       .setColor("#5f0f22")
