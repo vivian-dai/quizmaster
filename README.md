@@ -15,6 +15,25 @@ I will operate under the assumption Discord and Google Sheets API knowledge are 
 |ACCOUNT|Name (username) of the account ~~sponsoring~~ being featured|
 |LINK|Link to the account being featured|
 |PFP_LINK|Link to the profile picture of the account being featured|
+### Contents of Spreadsheet
+The spreadsheet has two tables:
+#### Questions
+Table to keep track of which trivia questions the bot can ask. All values in this table are kept in strings (question is a string, answer is a string, difficulty can be taken however you want, no precoded thing, topic can also be taken however).
+|Question|Answer|Difficulty|Topic|
+|-|-|-|-|
+|q1|a1|d1|t1|
+....etc.
+#### Users
+Table to keep track of user scores based on Discord ID. All values of this table are integers (Discord user ID is a number, scores are kept in numbers)
+|Discord ID|All Time Score|Monthly Score|Weekly Score|Daily Score|
+|-|-|-|-|-|
+|id1|ats1|ms1|ws1|ds1|
+....etc.
+### Starting the Bot
+To start the bot:
+```bash
+$ node index.js
+```
 ## TODO
 - [ ] finish the bot
 - [ ] properly document it *one day*
