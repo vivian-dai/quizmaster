@@ -1,22 +1,31 @@
 /**
  * @fileoverview the file to run for madness
+ * @version 1.1.1(?))
  */
-
+// allows access of .env content
 require('dotenv').config();
-
+//express, runs on port 3000
 const express = require('express');
 const app = express();
 const port = 3000;
-
+//will send this once bot is online
 app.get('/', function (req, res) {
   res.send('this is a cool bot');
 });
-
+//listens at the port 
 app.listen(port, function() {
   console.log(`listening at port ${port}`);
 });
 
 class TriviaGame {
+  /**
+   * Constructor for TriviaGame class.
+   * @class
+   * @param {Array<String>} questions array of questions to ask
+   * @param {int} questionCount number of questions to ask
+   * @param {int} time how many seconds to give before giving the answre
+   * @param {Discord channel object} channel the channel the game is running in 
+   */
   constructor (questions, questionCount, time, channel) {
     this.questions = questions;
     this.questionCount = questionCount;
@@ -26,15 +35,32 @@ class TriviaGame {
     this.questionTime = Date.now();
     this.checkTime();
   }
+  /**
+   * Gets the current question.
+   * @returns the current question
+   */
   getQuestion() {
     return this.questions[this.curQuestionIndex][0];
   }
+  /**
+   * Gets the difficulty of the current question.
+   * @returns difficulty of current question
+   */
   getDifficulty() {
     return this.questions[this.curQuestionIndex][2];
   }
+  /**
+   * Gets topic of current question.
+   * @returns topic of the current question
+   */
   getTopic() {
     return this.questions[this.curQuestionIndex][3];
   }
+  /**
+   * Checks if answer is correct.
+   * @param {String} submission 
+   * @returns true if answer is right, false otherwise
+   */
   checkAnswer(submission) {
     if(submission.toLowerCase().includes(this.questions[this.curQuestionIndex][1].toLowerCase())) {
       this.questionCount--;
@@ -46,6 +72,11 @@ class TriviaGame {
       return false;
     }
   }
+  /**
+   * Checks if round should be over
+   * @returns true if there are no more questions left this round
+   * @returns false if there's still more questions
+   */
   isRoundOver() {
     if (this.questionCount <= 0) {
       return true;
@@ -53,6 +84,10 @@ class TriviaGame {
       return false;
     }
   }
+  /**
+   * Sends the answer if the time is out
+   * @todo: make this a better function since this really sucks
+   */
   checkTime() {
     if ((Date.now() - this.questionTime) >= this.time*1000) {
       const answerEmbed = new Discord.MessageEmbed()
@@ -254,6 +289,13 @@ client.on('message', async (msg) => {
       .setColor("#5f0f22")
       .setDescription("game stoped")
     msg.channel.send(embed);
+  }
+
+  /**
+   * @todo create the scoreboard :P
+   */
+  if (msg.content === prefix.concat("scoreboard")) {
+
   }
 
   if (msg.content === prefix.concat("rank")) {
