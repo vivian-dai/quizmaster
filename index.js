@@ -116,15 +116,19 @@ class TriviaGame {
   }
 }
 
+// the questions spreadsheet
 var questions;
+// keeps track of the games going on
 var games = new Object();
 
+// determine what api to use
 const {google} = require('googleapis');
 const google_sheets = new google.auth.JWT(
   process.env.EMAIL, null, process.env.PRIVATE_KEY,
   ['https://www.googleapis.com/auth/spreadsheets']
 );
 
+// log in
 google_sheets.authorize( (err, tokens) =>{
   if (err) {
     console.log(err);
@@ -135,6 +139,10 @@ google_sheets.authorize( (err, tokens) =>{
   }
 });
 
+/**
+ * Load up the questions
+ * @param {google} cl the client to log in with
+ */
 async function gsrun(cl){
   const gsapi = google.sheets({version: "v4", auth: cl});
   const id = process.env.SHEET_ID;
@@ -146,6 +154,11 @@ async function gsrun(cl){
   questions = questionSheet.data.values;
 }
 
+/**
+ * updates the user scores (increases by one)
+ * @param {google} cl the client to log in with
+ * @param {int} user Discord user ID
+ */
 async function updateUsers(cl, user){
   const gsapi = google.sheets({version: "v4", auth: cl});
   const id = process.env.SHEET_ID;
@@ -176,6 +189,12 @@ async function updateUsers(cl, user){
   gsapi.spreadsheets.values.update(spreadSheetUsers);
 }
 
+/**
+ * gets the rank and scores of the user
+ * @param {google} cl client
+ * @param {int} user ID
+ * @returns array of rank and scores
+ */
 async function getRankAndScore(cl, user) {
   let rankAndScore = [1, 0, 0, 0, 0];
   const gsapi = google.sheets({version: "v4", auth: cl});
@@ -206,6 +225,12 @@ async function getRankAndScore(cl, user) {
   return rankAndScore;
 }
 
+/**
+ * Clears scores of a certain row
+ * @param {google} cl google client
+ * @param {int} row which row to clear
+ * @todo something about either the function or calling it isn't working, look into later
+ */
 async function updateUserScores(cl, row) {
   const gsapi = google.sheets({version: "v4", auth: cl});
   const id = process.env.SHEET_ID;
@@ -230,6 +255,9 @@ var day = new Date().getDate();
 var week = new Date().getDay();
 var month = new Date().getMonth();
 
+/**
+ * Checks up on stuff every second because this is clearly the right way to do background tasks
+ */
 function dumbThingToExecuteEverySecond() {
   let date = new Date();
   if (date.getDate() != day) {
@@ -260,6 +288,7 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const prefix = "!";
 
+// when bot is ready
 client.on('ready', () => {
   client.user.setPresence({
     activity: {
@@ -269,6 +298,7 @@ client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
+// when bot receives message
 client.on('message', async (msg) => {
   if (msg.content === prefix.concat("help")) {
     const embed = new Discord.MessageEmbed()
@@ -382,4 +412,5 @@ client.on('message', async (msg) => {
   }
 });
 
+// log into discord
 client.login(process.env.TOKEN);
