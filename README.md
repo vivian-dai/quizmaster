@@ -15,6 +15,8 @@ I will operate under the assumption Discord and Google Sheets API knowledge are 
 |ACCOUNT|Name (username) of the account ~~sponsoring~~ being featured|
 |LINK|Link to the account being featured|
 |PFP_LINK|Link to the profile picture of the account being featured|
+
+Take a look at [`.env.template`](./.env.template) for an example
 ### Contents of Spreadsheet
 The spreadsheet has two tables:
 #### Questions
