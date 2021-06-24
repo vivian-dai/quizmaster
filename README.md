@@ -10,7 +10,7 @@ I will operate under the assumption Discord and Google Sheets API knowledge are 
 |-|-|
 |TOKEN|Discord bot token
 |EMAIL|Email for the Google Sheets service|
-|PRIVATE_KEY|Private key for the Google Sheets service|
+|PRIVATE_KEY|Private key for the Google Sheets service. Note this should be in double quotes (`"`)|
 |SHEET_ID|ID of the Google Sheet storing the custom trivia questions|
 |ACCOUNT|Name (username) of the account ~~sponsoring~~ being featured|
 |LINK|Link to the account being featured|
@@ -36,5 +36,7 @@ $ node index.js
 ```
 ## TODO
 - [ ] finish the bot
-- [ ] properly document it *one day*
-- [ ] write the usage section *one day*
+  - [ ] Proper scoreboard function
+  - [ ] Fix the background tasks (updating scores daily, weekly, etc.)
+- [X] properly document it *one day*
+- [X] write the usage section *one day*

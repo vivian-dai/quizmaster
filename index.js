@@ -328,6 +328,9 @@ client.on('message', async (msg) => {
 
   }
 
+  /**
+   * @todo make options to get rank by day, week, what not
+   */
   if (msg.content === prefix.concat("rank")) {
     const rankAndScore = await getRankAndScore(google_sheets, msg.author.id);
     if (rankAndScore === null) {
